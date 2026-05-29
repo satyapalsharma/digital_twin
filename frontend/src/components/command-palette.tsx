@@ -14,6 +14,7 @@ import {
   Plus,
   Sparkles,
   Search,
+  BarChart3,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -47,6 +48,7 @@ const PAGES = [
 
 const ACTIONS = [
   { href: "/simulations", label: "New simulation", icon: Plus, keywords: "run start test" },
+  { href: "/simulations/compare", label: "Compare runs", icon: BarChart3, keywords: "compare runs analysis" },
   { href: "/surveys/new", label: "New survey", icon: Plus, keywords: "create build questions" },
 ];
 
