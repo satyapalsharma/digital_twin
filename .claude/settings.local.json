@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"c:/Users/vmuser/Documents/digital twin/backend/app/routers\" \"c:/Users/vmuser/Documents/digital twin/backend/app/services\" \"c:/Users/vmuser/Documents/digital twin/backend/app/models\" \"c:/Users/vmuser/Documents/digital twin/backend/app/schemas\" \"c:/Users/vmuser/Documents/digital twin/backend/app/seed_data\" \"c:/Users/vmuser/Documents/digital twin/backend/data\" && ls \"c:/Users/vmuser/Documents/digital twin/backend/\")",
+      "Bash(git init *)",
+      "Bash(git branch *)",
+      "Bash(npm install *)",
+      "Bash(py -3.14 -m venv .venv)",
+      "Bash(.venv/Scripts/python.exe -m pip install --upgrade pip --quiet)",
+      "Bash(.venv/Scripts/python.exe -m pip install \"openai>=1.50\" \"pydantic>=2.8\" \"fastapi>=0.110\" \"uvicorn[standard]\" \"sqlalchemy>=2.0\" \"python-dotenv\" \"tenacity\" \"httpx\")",
+      "Bash(.venv/Scripts/python.exe -m pip install \"arize-phoenix-otel\" \"openinference-instrumentation-openai\")",
+      "Bash(.venv/Scripts/python.exe -m pip install \"git+https://github.com/microsoft/TinyTroupe.git\")",
+      "Bash(.venv/Scripts/python.exe -m pip install \"pydantic-settings>=2.4\" \"python-multipart>=0.0.9\")",
+      "Bash(.venv/Scripts/python.exe -c \"from app.main import app; print\\('OK -', len\\(app.routes\\), 'routes registered'\\)\")",
+      "Bash(.venv/Scripts/python.exe -c ' *)",
+      "Bash(.venv/Scripts/python.exe -c \"import tinytroupe; print\\('tinytroupe version:', getattr\\(tinytroupe, '__version__', 'unknown'\\)\\)\")",
+      "Bash(.venv/Scripts/python.exe -m pip install \"git+https://github.com/microsoft/TinyTroupe.git\" --no-deps)",
+      "Bash(.venv/Scripts/python.exe -c \"from tinytroupe.agent import TinyPerson; print\\('tinytroupe import: OK'\\)\")",
+      "Bash(npm run *)",
+      "Bash(.venv/Scripts/python.exe -m scripts.seed_personas --help)",
+      "Bash(.venv/Scripts/python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --log-level warning)",
+      "Bash(.venv/Scripts/python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload --log-level info)",
+      "Bash(npx tsc *)",
+      "Bash(npx next *)",
+      "Bash(taskkill //PID 4516 //F)",
+      "Bash(netstat -ano)",
+      "Bash(ps -W)",
+      "Bash(grep -q \"Application startup complete\" \"C:/Users/vmuser/AppData/Local/Temp/2/claude/c--Users-vmuser-Documents-digital-twin/bf08ac83-1aba-474b-9c12-6502e73370d0/tasks/buwzd577q.output\")",
+      "Bash(.venv/Scripts/python.exe -m scripts.seed_audiences -v)",
+      "Bash(.venv/Scripts/python.exe -m scripts.seed_surveys -v)",
+      "Bash(node -e \"const p = require\\('./package.json'\\); console.log\\('next-themes:', p.dependencies['next-themes']\\); console.log\\('cmdk:', p.dependencies['cmdk']\\); console.log\\('nextjs-toploader:', p.dependencies['nextjs-toploader']\\);\")"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\vmuser\\Documents\\digital twin\\backend\\app"
+    ]
+  }
+}

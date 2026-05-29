@@ -1,0 +1,131 @@
+@import "tailwindcss";
+
+/* =============================================================================
+   Simulation Sentinels — orange palette inspired by Anthropic / Claude Code.
+   Tokens are stored as HSL channel triples so they work with both
+   Tailwind v4's @theme and shadcn-style hsl(var(--token)) consumers.
+   ============================================================================= */
+
+:root {
+  /* Surfaces */
+  --background: 36 33% 97%;          /* #FAF9F7 warm off-white */
+  --foreground: 28 17% 10%;          /* #1F1B16 near-black warm */
+  --surface: 0 0% 100%;
+  --surface-elevated: 33 22% 95%;    /* #F5F2EE */
+  --card: 0 0% 100%;
+  --card-foreground: 28 17% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 28 17% 10%;
+  --muted: 33 22% 95%;
+  --muted-foreground: 30 8% 39%;     /* #6B655D */
+  --border: 30 22% 88%;              /* #E8E2DA */
+  --input: 30 22% 88%;
+  --ring: 17 60% 58%;
+
+  /* Brand orange */
+  --primary: 17 60% 60%;             /* #D97757 claude orange */
+  --primary-foreground: 0 0% 100%;
+  --primary-hover: 17 49% 51%;       /* #C26342 */
+  --accent: 19 100% 67%;             /* #FF8C5A bright */
+  --accent-foreground: 0 0% 100%;
+  --secondary: 33 22% 95%;
+  --secondary-foreground: 28 17% 10%;
+
+  /* Semantic */
+  --success: 152 50% 35%;            /* #2D8659 */
+  --success-foreground: 0 0% 100%;
+  --warning: 41 65% 55%;             /* #D9A441 */
+  --warning-foreground: 0 0% 100%;
+  --destructive: 4 56% 51%;          /* #C7453C */
+  --destructive-foreground: 0 0% 100%;
+
+  /* Radii */
+  --radius: 0.65rem;
+}
+
+.dark {
+  --background: 28 17% 8%;
+  --foreground: 36 33% 97%;
+  --surface: 28 14% 12%;
+  --surface-elevated: 28 12% 16%;
+  --card: 28 14% 12%;
+  --card-foreground: 36 33% 97%;
+  --popover: 28 14% 12%;
+  --popover-foreground: 36 33% 97%;
+  --muted: 28 12% 16%;
+  --muted-foreground: 33 14% 65%;
+  --border: 28 12% 22%;
+  --input: 28 12% 22%;
+  --ring: 17 60% 60%;
+  --primary: 17 70% 62%;
+  --primary-foreground: 0 0% 100%;
+  --primary-hover: 17 60% 55%;
+  --accent: 19 100% 67%;
+  --accent-foreground: 0 0% 100%;
+  --secondary: 28 12% 16%;
+  --secondary-foreground: 36 33% 97%;
+  --success: 152 50% 45%;
+  --warning: 41 65% 60%;
+  --destructive: 4 65% 58%;
+}
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-surface: hsl(var(--surface));
+  --color-surface-elevated: hsl(var(--surface-elevated));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-hover: hsl(var(--primary-hover));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+/* Subtle scrollbar that matches the warm palette */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
+}
