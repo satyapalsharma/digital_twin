@@ -49,6 +49,7 @@ const PAGES = [
 const ACTIONS = [
   { href: "/simulations", label: "New simulation", icon: Plus, keywords: "run start test" },
   { href: "/simulations/compare", label: "Compare runs", icon: BarChart3, keywords: "compare runs analysis" },
+  { href: "/products", label: "New product", icon: Plus, keywords: "create build product scenario" },
   { href: "/surveys/new", label: "New survey", icon: Plus, keywords: "create build questions" },
 ];
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -25,6 +26,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
+import { ProductForm } from "@/components/products/product-form";
+import { ProductDetailDialog } from "@/components/products/product-detail-dialog";
 
 interface Product {
   id: number;
@@ -61,6 +64,9 @@ function iconFor(p: Product) {
 }
 
 export default function ProductsPage() {
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+
   const { data, isLoading } = useQuery<Product[]>({
     queryKey: ["products"],
     queryFn: () => api.get<Product[]>("/products"),
@@ -69,6 +75,11 @@ export default function ProductsPage() {
   const products = data ?? [];
   const templates = products.filter((p) => p.is_template);
   const custom = products.filter((p) => !p.is_template);
+
+  const handleProductClick = (product: Product) => {
+    setSelectedProduct(product);
+    setDetailOpen(true);
+  };
 
   return (
     <div className="px-8 py-10 max-w-7xl mx-auto space-y-10">
@@ -80,9 +91,7 @@ export default function ProductsPage() {
             or roll your own.
           </p>
         </div>
-        <Button disabled>
-          + Custom product (soon)
-        </Button>
+        <ProductForm />
       </div>
 
       {isLoading && (
@@ -98,7 +107,11 @@ export default function ProductsPage() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {templates.map((p) => (
-                <ProductCard key={p.id} product={p} />
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  onClick={() => handleProductClick(p)}
+                />
               ))}
             </div>
           </section>
@@ -111,21 +124,34 @@ export default function ProductsPage() {
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {custom.map((p) => (
-                  <ProductCard key={p.id} product={p} />
+                  <ProductCard
+                    key={p.id}
+                    product={p}
+                    onClick={() => handleProductClick(p)}
+                  />
                 ))}
               </div>
             </section>
           )}
         </>
       )}
+
+      <ProductDetailDialog
+        product={selectedProduct}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+      />
     </div>
   );
 }
 
-function ProductCard({ product }: { product: Product }) {
+function ProductCard({ product, onClick }: { product: Product; onClick: () => void }) {
   const Icon = iconFor(product);
   return (
-    <Card className="group hover:border-primary/40 hover:shadow-md transition-all flex flex-col">
+    <Card
+      className="group hover:border-primary/40 hover:shadow-md transition-all flex flex-col cursor-pointer"
+      onClick={onClick}
+    >
       <CardHeader className="flex-1">
         <div className="flex items-start justify-between">
           <div className="size-10 rounded-lg bg-primary/10 text-primary grid place-items-center">
@@ -142,7 +168,7 @@ function ProductCard({ product }: { product: Product }) {
       </CardHeader>
       <CardContent>
         <Button asChild variant="ghost" size="sm" className="w-full justify-between">
-          <Link href={`/simulations?product=${product.id}`}>
+          <Link href={`/simulations?product=${product.id}`} onClick={(e) => e.stopPropagation()}>
             Run with audience
             <ArrowRight className="size-3.5" />
           </Link>
