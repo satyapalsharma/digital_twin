@@ -33,11 +33,11 @@ dist/
 next-env.d.ts
 
 # Databases (SQLite local data)
-*.db
-*.db-journal
-*.sqlite
-*.sqlite3
-backend/data/
+# *.db
+# *.db-journal
+# *.sqlite
+# *.sqlite3
+# backend/data/
 
 # IDE
 .vscode/
