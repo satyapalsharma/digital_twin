@@ -28,7 +28,15 @@
       "Bash(grep -q \"Application startup complete\" \"C:/Users/vmuser/AppData/Local/Temp/2/claude/c--Users-vmuser-Documents-digital-twin/bf08ac83-1aba-474b-9c12-6502e73370d0/tasks/buwzd577q.output\")",
       "Bash(.venv/Scripts/python.exe -m scripts.seed_audiences -v)",
       "Bash(.venv/Scripts/python.exe -m scripts.seed_surveys -v)",
-      "Bash(node -e \"const p = require\\('./package.json'\\); console.log\\('next-themes:', p.dependencies['next-themes']\\); console.log\\('cmdk:', p.dependencies['cmdk']\\); console.log\\('nextjs-toploader:', p.dependencies['nextjs-toploader']\\);\")"
+      "Bash(node -e \"const p = require\\('./package.json'\\); console.log\\('next-themes:', p.dependencies['next-themes']\\); console.log\\('cmdk:', p.dependencies['cmdk']\\); console.log\\('nextjs-toploader:', p.dependencies['nextjs-toploader']\\);\")",
+      "Bash(./.venv/Scripts/python.exe -m scripts.seed_scenarios)",
+      "Bash(./.venv/Scripts/python.exe -m scripts.seed_surveys)",
+      "Bash(./.venv/Scripts/python.exe -m scripts.seed_personas)",
+      "Bash(./.venv/Scripts/python.exe -c \"from app.db import SessionLocal; from app.models.persona import Persona; import sys; db=SessionLocal\\(\\); n=db.query\\(Persona\\).count\\(\\); db.close\\(\\); sys.exit\\(0 if n>=500 else 1\\)\")",
+      "Bash(cp public/EXL_logo.svg src/app/icon.svg)",
+      "Bash(rm -f src/app/favicon.ico)",
+      "Bash(node -e \"const p=require\\('./node_modules/@reduxjs/toolkit/package.json'\\); console.log\\('main:',p.main\\); console.log\\('module:',p.module\\); console.log\\('exports[.]:',JSON.stringify\\(p.exports&&p.exports['.'],null,2\\)\\)\")",
+      "Bash(node -e \"try{require.resolve\\('@reduxjs/toolkit',{paths:['./']}\\);console.log\\('resolve OK'\\)}catch\\(e\\){console.log\\('resolve FAIL:',e.message.split\\(String.fromCharCode\\(10\\)\\)[0]\\)}\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\vmuser\\Documents\\digital twin\\backend\\app"

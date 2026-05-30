@@ -6,6 +6,7 @@ import { FilterPanel } from "@/components/audience/filter-panel";
 import { CohortPreview } from "@/components/audience/cohort-preview";
 import { SaveBar } from "@/components/audience/save-bar";
 import { SavedAudiences } from "@/components/audience/saved-list";
+import { ErrorState } from "@/components/layout/states";
 import { api } from "@/lib/api";
 import {
   DEFAULT_FILTER,
@@ -27,6 +28,11 @@ interface PreviewResponse {
   }[];
 }
 
+interface FacetsResponse {
+  regions: { value: string; count: number }[];
+  occupations: { value: string; count: number }[];
+}
+
 export default function AudiencesPage() {
   const [filter, setFilter] = useState<FilterState>(DEFAULT_FILTER);
   const [savedRefresh, setSavedRefresh] = useState(0);
@@ -34,9 +40,17 @@ export default function AudiencesPage() {
   const debounced = useDebouncedValue(filter, 250);
   const payload = useMemo(() => toApiPayload(debounced), [debounced]);
 
-  const { data, isFetching } = useQuery<PreviewResponse>({
+  const { data, isFetching, isError, error, refetch } = useQuery<PreviewResponse>({
     queryKey: ["audience-preview", payload],
     queryFn: () => api.post<PreviewResponse>("/personas/filter/preview", payload),
+  });
+
+  // Facets drive the region/occupation chips from the live pool, so they match
+  // whatever's actually in the data (incl. imported personas).
+  const { data: facets } = useQuery<FacetsResponse>({
+    queryKey: ["persona-facets"],
+    queryFn: () => api.get<FacetsResponse>("/personas/facets"),
+    staleTime: 60_000,
   });
 
   return (
@@ -48,8 +62,21 @@ export default function AudiencesPage() {
         </p>
       </div>
 
+      {isError && (
+        <ErrorState
+          title="Couldn't preview this cohort"
+          description={String(error)}
+          onRetry={() => refetch()}
+        />
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
-        <FilterPanel value={filter} onChange={setFilter} />
+        <FilterPanel
+          value={filter}
+          onChange={setFilter}
+          regionOptions={facets?.regions.map((r) => r.value)}
+          occupationOptions={facets?.occupations.map((o) => o.value)}
+        />
         <CohortPreview
           total={data?.total}
           sample={data?.sample ?? []}

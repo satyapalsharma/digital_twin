@@ -21,7 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { api } from "@/lib/api";
 
 interface Audience {
@@ -144,6 +143,15 @@ export function NewSimulationForm() {
                 ))}
               </SelectContent>
             </Select>
+            {presetProduct && productId === presetProduct && (
+              <p className="text-xs text-primary mt-1">
+                Pre-filled from Products
+                {products.data?.find((p) => String(p.id) === presetProduct)?.name
+                  ? ` — “${products.data.find((p) => String(p.id) === presetProduct)!.name}”`
+                  : ""}
+                . Pick an audience to run.
+              </p>
+            )}
           </Field>
 
           <Field label="Survey (optional)">

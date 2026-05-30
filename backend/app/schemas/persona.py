@@ -22,6 +22,32 @@ class PersonaCreate(PersonaBase):
     source: str = "llm_generated"
 
 
+class PersonaUpdate(BaseModel):
+    """Partial update — every field optional. Used by the persona editor."""
+    name: str | None = None
+    age: int | None = Field(default=None, ge=18, le=100)
+    gender: Literal["male", "female", "non_binary", "other"] | None = None
+    income: int | None = Field(default=None, ge=0)
+    occupation: str | None = None
+    region: str | None = None
+    marital_status: Literal["single", "married", "divorced", "widowed"] | None = None
+    dependents: int | None = Field(default=None, ge=0)
+    risk_tolerance: Literal["low", "medium", "high"] | None = None
+    claims_history: Literal["none", "few", "many"] | None = None
+    attributes: dict | None = None
+    bio: str | None = None
+
+
+class PersonaBulkCreate(BaseModel):
+    """Bulk insert payload used by the persona import wizard."""
+    personas: list[PersonaCreate] = Field(min_length=1, max_length=2000)
+
+
+class PersonaBulkResult(BaseModel):
+    inserted: int
+    ids: list[int]
+
+
 class PersonaOut(PersonaBase):
     model_config = ConfigDict(from_attributes=True)
     id: int

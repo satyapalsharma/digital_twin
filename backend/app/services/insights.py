@@ -24,6 +24,31 @@ _PRICE_PER_M_INPUT = 0.10
 _PRICE_PER_M_OUTPUT = 0.40
 
 
+def _extract_json(content: str | None) -> str:
+    """Pull a JSON object out of an LLM completion.
+
+    Some synthesizer models (notably Claude) wrap their output in ```json code
+    fences or prepend stray prose even when json_object mode is requested, which
+    makes a bare json.loads fail at char 0. Strip fences, then fall back to
+    slicing from the first '{' to the last '}'.
+    """
+    if not content:
+        return "{}"
+    s = content.strip()
+    if s.startswith("```"):
+        s = s[3:]
+        if s[:4].lower() == "json":
+            s = s[4:]
+        if s.endswith("```"):
+            s = s[:-3]
+        s = s.strip()
+    if not s.startswith("{"):
+        i, j = s.find("{"), s.rfind("}")
+        if i != -1 and j > i:
+            s = s[i : j + 1]
+    return s or "{}"
+
+
 def _percentile(values: list[int], pct: float) -> int:
     """Nearest-rank percentile (pct in 0..100). Returns 0 for empty input."""
     if not values:
@@ -53,6 +78,7 @@ class SynthesizerOutput(BaseModel):
     reasoning: str  # 2-4 sentence justification referencing data
     top_concerns: list[str]
     top_positives: list[str]
+    recommendations: list[str] = Field(default_factory=list)  # concrete "what to improve" suggestions
     diverging_personas: list[int]  # persona IDs whose views most diverge from majority
     segment_breakdown: list[dict[str, Any]]  # [{segment, count, avg_intent, sentiment_pct}]
 
@@ -238,6 +264,7 @@ Return JSON exactly matching this shape:
   "reasoning": "<2-4 sentences justifying the verdict using specific persona concerns and the metric pattern>",
   "top_concerns": ["concern phrased generally", ...],   // 3-5 items, each a real concern from responses, deduped
   "top_positives": ["positive phrased generally", ...], // 2-5 items
+  "recommendations": ["actionable improvement", ...],   // 3-5 concrete, specific changes to the product/pricing/messaging that would raise purchase intent or address the top concerns; each starts with an imperative verb (e.g. "Cap the premium increase at...", "Add a...", "Reframe the...")
   "diverging_personas": [<persona_id int>, ...],       // 2-3 IDs whose response most contradicts the majority verdict
   "segment_breakdown": [
     {{"segment": "risk_tolerance: low", "verdict_lean": "halt|optimize|launch", "note": "one-line why"}},
@@ -330,7 +357,7 @@ async def synthesize_insight(db: Session, sim_id: int) -> Insight | None:
             timeout=60,
             extra_body=completion_route_for_model(settings.openrouter_synthesizer_model),
         )
-    raw = resp.choices[0].message.content or "{}"
+    raw = _extract_json(resp.choices[0].message.content)
     try:
         synth = SynthesizerOutput.model_validate(json.loads(raw))
     except (ValidationError, json.JSONDecodeError) as e:
@@ -346,6 +373,7 @@ async def synthesize_insight(db: Session, sim_id: int) -> Insight | None:
             ),
             top_concerns=[],
             top_positives=[],
+            recommendations=[],
             diverging_personas=[],
             segment_breakdown=[],
         )
@@ -364,6 +392,7 @@ async def synthesize_insight(db: Session, sim_id: int) -> Insight | None:
         reasoning=synth.reasoning,
         top_concerns=synth.top_concerns,
         top_positives=synth.top_positives,
+        recommendations=synth.recommendations,
         segment_breakdown=synth.segment_breakdown,
         diverging_personas=synth.diverging_personas,
         metrics=metrics,

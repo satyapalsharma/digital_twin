@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Shield } from "lucide-react";
 
 const COLUMNS: { heading: string; links: { label: string; href: string }[] }[] = [
   {
@@ -37,11 +36,10 @@ export function SiteFooter() {
       <div className="mx-auto max-w-7xl px-6 py-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-3">
           <Link href="/" className="flex items-center gap-2">
-            <div className="size-8 rounded-lg bg-primary text-primary-foreground grid place-items-center shadow-sm">
-              <Shield className="size-4" />
-            </div>
-            <span className="text-sm font-semibold tracking-tight">
-              Simulation <span className="text-primary">Sentinels</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/EXL_logo.svg" alt="EXL" className="h-5 w-auto" />
+            <span className="text-xl leading-none font-bold tracking-tight text-primary">
+              CX Digital Twin
             </span>
           </Link>
           <p className="text-sm text-muted-foreground max-w-xs">
@@ -73,8 +71,7 @@ export function SiteFooter() {
 
       <div className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
-          <span>© {new Date().getFullYear()} Simulation Sentinels. All rights reserved.</span>
-          <span>Hackathon build · Insurance vertical · v0.1</span>
+          <span>© {new Date().getFullYear()} CX Digital Twin. All rights reserved.</span>
         </div>
       </div>
     </footer>

@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* =============================================================================
-   Simulation Sentinels — orange palette inspired by Anthropic / Claude Code.
+   CX Digital Twin — orange palette inspired by Anthropic / Claude Code.
    Tokens are stored as HSL channel triples so they work with both
    Tailwind v4's @theme and shadcn-style hsl(var(--token)) consumers.
    ============================================================================= */
@@ -20,12 +20,12 @@
   --muted-foreground: 30 8% 39%;     /* #6B655D */
   --border: 30 22% 88%;              /* #E8E2DA */
   --input: 30 22% 88%;
-  --ring: 17 60% 58%;
+  --ring: 16.9 96.8% 51.3%;
 
   /* Brand orange */
-  --primary: 17 60% 60%;             /* #D97757 claude orange */
+  --primary: 16.9 96.8% 51.3%;             /* #FB4E0B EXL orange */
   --primary-foreground: 0 0% 100%;
-  --primary-hover: 17 49% 51%;       /* #C26342 */
+  --primary-hover: 16.9 96.8% 44%;       /* darker #FB4E0B for hover */
   --accent: 19 100% 67%;             /* #FF8C5A bright */
   --accent-foreground: 0 0% 100%;
   --secondary: 33 22% 95%;
@@ -56,10 +56,10 @@
   --muted-foreground: 33 14% 65%;
   --border: 28 12% 22%;
   --input: 28 12% 22%;
-  --ring: 17 60% 60%;
-  --primary: 17 70% 62%;
+  --ring: 16.9 96.8% 51.3%;
+  --primary: 16.9 96.8% 51.3%;             /* #FB4E0B EXL orange */
   --primary-foreground: 0 0% 100%;
-  --primary-hover: 17 60% 55%;
+  --primary-hover: 16.9 96.8% 44%;
   --accent: 19 100% 67%;
   --accent-foreground: 0 0% 100%;
   --secondary: 28 12% 16%;

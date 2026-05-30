@@ -9,15 +9,18 @@ import {
   PlayCircle,
   LineChart,
   ClipboardList,
-  Shield,
+  LayoutDashboard,
   Home,
   LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { DemoControls } from "@/components/layout/demo-controls";
+import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/lib/auth";
 
 const nav = [
+  { href: "/overview", label: "Overview", icon: LayoutDashboard },
   { href: "/personas", label: "Personas", icon: Users },
   { href: "/audiences", label: "Audiences", icon: Filter },
   { href: "/products", label: "Products", icon: Package },
@@ -26,7 +29,13 @@ const nav = [
   { href: "/insights", label: "Insights", icon: LineChart },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  /** Called after any navigation/action — lets the mobile drawer close itself. */
+  onNavigate?: () => void;
+  className?: string;
+}
+
+export function Sidebar({ onNavigate, className }: SidebarProps) {
   const pathname = usePathname();
   const { user, signOut } = useAuth();
   const initials = user?.name
@@ -36,22 +45,22 @@ export function Sidebar() {
     .slice(0, 2);
 
   return (
-    <aside className="w-60 shrink-0 border-r border-border bg-surface flex flex-col">
+    <aside
+      className={cn(
+        "w-60 shrink-0 border-r border-border bg-surface flex flex-col",
+        className
+      )}
+    >
       <Link
         href="/"
+        onClick={onNavigate}
         className="flex items-center gap-2 px-5 h-16 border-b border-border"
       >
-        <div className="size-8 rounded-lg bg-primary text-primary-foreground grid place-items-center shadow-sm">
-          <Shield className="size-4" />
-        </div>
-        <div className="flex flex-col leading-tight">
-          <span className="text-sm font-semibold tracking-tight">
-            Simulation
-          </span>
-          <span className="text-sm font-semibold tracking-tight text-primary">
-            Sentinels
-          </span>
-        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/EXL_logo.svg" alt="EXL" className="h-5 w-auto" />
+        <span className="text-base leading-none font-semibold tracking-tight text-primary whitespace-nowrap">
+          CX Digital Twin
+        </span>
       </Link>
 
       <nav className="flex-1 p-3 space-y-1 text-sm">
@@ -62,6 +71,7 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={onNavigate}
               className={cn(
                 "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
                 active
@@ -93,6 +103,7 @@ export function Sidebar() {
 
         <Link
           href="/"
+          onClick={onNavigate}
           className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-foreground/80 hover:bg-muted hover:text-foreground transition-colors"
         >
           <Home className="size-4" />
@@ -100,17 +111,20 @@ export function Sidebar() {
         </Link>
         <button
           type="button"
-          onClick={signOut}
+          onClick={() => {
+            onNavigate?.();
+            signOut();
+          }}
           className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm text-foreground/80 hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
         >
           <LogOut className="size-4" />
           Sign out
         </button>
 
-        <div className="flex items-center justify-between pt-1.5">
-          <span className="text-[11px] text-muted-foreground">
-            Hackathon build · v0.1
-          </span>
+        <Separator className="my-1.5" />
+        <DemoControls />
+
+        <div className="flex items-center justify-end pt-1.5">
           <ThemeToggle />
         </div>
       </div>

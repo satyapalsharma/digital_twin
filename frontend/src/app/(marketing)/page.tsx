@@ -62,7 +62,7 @@ const scenarios = [
 ];
 
 const stats = [
-  { label: "Synthetic customers", value: "500+" },
+  { label: "Synthetic customers", value: "1500+" },
   { label: "Pre-built scenarios", value: "10" },
   { label: "Time per simulation", value: "~60s" },
   { label: "Cost per run", value: "~$0.12" },
@@ -111,17 +111,17 @@ export default function HomePage() {
     <div className="px-6 md:px-8">
       {/* Hero */}
       <section className="max-w-7xl mx-auto py-16 md:py-24 space-y-6">
-        <Badge variant="muted" className="gap-1.5">
+        {/* <Badge variant="muted" className="gap-1.5">
           <span className="size-1.5 rounded-full bg-primary animate-pulse" />
-          Hackathon build · insurance vertical
-        </Badge>
+          CX Digital Twin
+        </Badge> */}
         <h1 className="text-4xl md:text-6xl font-bold tracking-tight max-w-3xl">
           Test a policy on{" "}
-          <span className="text-primary">500+ AI-twin customers</span> before
+          <span className="text-primary">1500+ AI-twin customers</span> before
           launching to real ones.
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl">
-          Simulation Sentinels spins up synthetic personas, runs your product
+          CX Digital Twin spins up synthetic personas, runs your product
           through a survey or focus-group debate, and returns a{" "}
           <span className="font-medium text-foreground">
             Launch · Optimize · Halt

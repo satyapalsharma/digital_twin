@@ -75,6 +75,7 @@ export function QuestionEditor({ question, index, onChange, onDelete }: Props) {
             variant="ghost"
             size="icon"
             onClick={onDelete}
+            aria-label={`Delete question ${index + 1}`}
             className="text-muted-foreground hover:text-destructive"
           >
             <Trash2 className="size-4" />
@@ -134,6 +135,7 @@ export function QuestionEditor({ question, index, onChange, onDelete }: Props) {
                   }}
                   className="text-muted-foreground hover:text-destructive"
                   disabled={(question.options?.length ?? 0) <= 2}
+                  aria-label={`Remove option ${i + 1}`}
                 >
                   <Trash2 className="size-3.5" />
                 </Button>

@@ -8,7 +8,7 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Simulation Sentinels",
+  title: "CX Digital Twin",
   description:
     "Test insurance products against AI-twin customer personas. Get a Launch / Optimize / Halt verdict before going to market.",
 };

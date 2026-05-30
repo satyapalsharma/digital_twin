@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, ShieldCheck, Lock } from "lucide-react";
+import { Loader2, Lock } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -77,11 +77,10 @@ export function SsoDialog() {
     >
       <DialogContent className="max-w-md">
         <DialogHeader className="items-center text-center pr-0">
-          <div className="size-12 rounded-xl bg-primary text-primary-foreground grid place-items-center shadow-sm mx-auto mb-2">
-            <ShieldCheck className="size-6" />
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/EXL_logo.svg" alt="EXL" className="h-5 w-auto mx-auto mb-2" />
           <DialogTitle className="text-center">
-            Sign in to Simulation Sentinels
+            Sign in to CX Digital Twin
           </DialogTitle>
           <DialogDescription className="text-center">
             Use your organization&apos;s single sign-on to continue to the

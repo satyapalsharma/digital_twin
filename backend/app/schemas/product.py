@@ -30,6 +30,15 @@ class ProductCreate(ProductBase):
     pass
 
 
+class ProductUpdate(BaseModel):
+    """Partial update — used by the custom-product editor."""
+    name: str | None = None
+    category: str | None = None
+    scenario_type: ScenarioType | None = None
+    description: str | None = None
+    config: dict | None = None
+
+
 class ProductOut(ProductBase):
     model_config = ConfigDict(from_attributes=True)
     id: int

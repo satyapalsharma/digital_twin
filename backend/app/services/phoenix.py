@@ -44,6 +44,13 @@ def init_tracing() -> None:
         from phoenix.otel import register
 
         register(
+            endpoint=settings.phoenix_collector_endpoint,
+            # Force HTTP/protobuf. Without this, phoenix.otel's endpoint
+            # inference defaults to gRPC and appends port :4317 to the URL —
+            # which a Cloud Run host (HTTPS on :443 only) silently refuses, so
+            # every span export fails to connect and is dropped. The endpoint
+            # must therefore include the full /v1/traces path.
+            protocol="http/protobuf",
             project_name=settings.phoenix_project_name,
             auto_instrument=True,
             batch=True,

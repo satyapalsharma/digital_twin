@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { cn, formatCurrency } from "@/lib/utils";
 import type { Persona } from "./persona-detail-dialog";
-import { PersonaAvatar } from "./avatar";
 
 interface Props {
   personas: Persona[];
@@ -18,6 +17,12 @@ const riskBadge = {
   medium: "warning",
   high: "destructive",
 } as const;
+
+const SOURCE_META: Record<string, { label: string; variant: "muted" | "outline" | "secondary" }> = {
+  llm_generated: { label: "Generated", variant: "muted" },
+  user_created: { label: "Custom", variant: "secondary" },
+  imported: { label: "Imported", variant: "outline" },
+};
 
 export function PersonasTable({ personas, onSelect }: Props) {
   const [q, setQ] = useState("");
@@ -57,6 +62,7 @@ export function PersonasTable({ personas, onSelect }: Props) {
                 <Th>Region</Th>
                 <Th>Risk</Th>
                 <Th>Claims</Th>
+                <Th>Source</Th>
               </tr>
             </thead>
             <tbody>
@@ -64,7 +70,16 @@ export function PersonasTable({ personas, onSelect }: Props) {
                 <tr
                   key={p.id}
                   onClick={() => onSelect(p)}
-                  className="border-t border-border hover:bg-primary/5 cursor-pointer transition-colors"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onSelect(p);
+                    }
+                  }}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`View ${p.name} — ${p.occupation}, ${p.region}`}
+                  className="border-t border-border hover:bg-primary/5 cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
                 >
                   <Td>
                     <div className="flex items-center gap-2">
@@ -87,11 +102,21 @@ export function PersonasTable({ personas, onSelect }: Props) {
                     </Badge>
                   </Td>
                   <Td className="text-muted-foreground capitalize">{p.claims_history}</Td>
+                  <Td>
+                    {(() => {
+                      const meta = SOURCE_META[p.source ?? "llm_generated"] ?? SOURCE_META.llm_generated;
+                      return (
+                        <Badge variant={meta.variant} className="text-[10px]">
+                          {meta.label}
+                        </Badge>
+                      );
+                    })()}
+                  </Td>
                 </tr>
               ))}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center text-sm text-muted-foreground">
+                  <td colSpan={8} className="px-4 py-12 text-center text-sm text-muted-foreground">
                     {personas.length === 0
                       ? "No personas yet. Run scripts/seed_personas.py to generate."
                       : "No personas match your search."}

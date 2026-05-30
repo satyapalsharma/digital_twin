@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Shield, Menu, X, LogOut } from "lucide-react";
+import { Menu, X, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useAuth } from "@/lib/auth";
@@ -24,11 +24,10 @@ export function SiteHeader() {
       <div className="mx-auto max-w-7xl px-6 h-16 flex items-center justify-between gap-4">
         {/* Branding */}
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <div className="size-8 rounded-lg bg-primary text-primary-foreground grid place-items-center shadow-sm">
-            <Shield className="size-4" />
-          </div>
-          <span className="font-semibold tracking-tight hidden sm:inline">
-            Simulation <span className="text-primary">Sentinels</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/EXL_logo.svg" alt="EXL" className="h-5 w-auto" />
+          <span className="text-xl leading-none font-bold tracking-tight text-primary hidden sm:inline">
+            CX Digital Twin
           </span>
         </Link>
 

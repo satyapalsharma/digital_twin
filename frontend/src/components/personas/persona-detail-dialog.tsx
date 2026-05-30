@@ -1,5 +1,8 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { Pencil, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -8,7 +11,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { api } from "@/lib/api";
 import { formatCurrency } from "@/lib/utils";
 import { PersonaAvatar } from "./avatar";
 
@@ -26,12 +31,15 @@ export interface Persona {
   claims_history: string;
   attributes: Record<string, unknown>;
   bio: string;
+  source?: string;
 }
 
 interface Props {
   persona: Persona | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Invoked when the user chooses to edit — parent opens the edit form. */
+  onEdit?: (p: Persona) => void;
 }
 
 const riskColor = {
@@ -40,9 +48,24 @@ const riskColor = {
   high: "destructive",
 } as const;
 
-export function PersonaDetailDialog({ persona, open, onOpenChange }: Props) {
+export function PersonaDetailDialog({ persona, open, onOpenChange, onEdit }: Props) {
+  const qc = useQueryClient();
+
   if (!persona) return null;
   const a = persona.attributes ?? {};
+
+  const handleDelete = async () => {
+    if (!confirm(`Delete ${persona.name}? This cannot be undone.`)) return;
+    try {
+      await api.delete(`/personas/${persona.id}`);
+      toast.success(`${persona.name} deleted`);
+      qc.invalidateQueries({ queryKey: ["personas-all"] });
+      qc.invalidateQueries({ queryKey: ["personas-count"] });
+      onOpenChange(false);
+    } catch (err) {
+      toast.error(`Delete failed: ${String(err).slice(0, 100)}`);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -64,6 +87,11 @@ export function PersonaDetailDialog({ persona, open, onOpenChange }: Props) {
               risk: {persona.risk_tolerance}
             </Badge>
             <Badge variant="outline">claims: {persona.claims_history}</Badge>
+            {persona.source && persona.source !== "llm_generated" && (
+              <Badge variant="secondary" className="capitalize">
+                {persona.source === "user_created" ? "custom" : persona.source}
+              </Badge>
+            )}
           </div>
         </DialogHeader>
 
@@ -127,6 +155,28 @@ export function PersonaDetailDialog({ persona, open, onOpenChange }: Props) {
             </p>
           </Section>
         )}
+
+        <Separator />
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1"
+            onClick={() => onEdit?.(persona)}
+          >
+            <Pencil className="size-4" />
+            Edit
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleDelete}
+            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+          >
+            <Trash2 className="size-4" />
+            Delete
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

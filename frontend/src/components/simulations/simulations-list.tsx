@@ -6,7 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowRight, CheckCircle2, Circle, AlertCircle, Loader2 } from "lucide-react";
+import { EmptyState, ErrorState } from "@/components/layout/states";
+import { ArrowRight, CheckCircle2, Circle, AlertCircle, Loader2, PlayCircle } from "lucide-react";
 import { api } from "@/lib/api";
 
 interface SimRow {
@@ -35,7 +36,7 @@ const StatusIcon = ({ status }: { status: string }) => {
 };
 
 export function SimulationsList() {
-  const { data, isLoading } = useQuery<SimRow[]>({
+  const { data, isLoading, isError, refetch } = useQuery<SimRow[]>({
     queryKey: ["simulations"],
     queryFn: () => api.get<SimRow[]>("/simulations"),
     refetchInterval: 3000,
@@ -50,22 +51,37 @@ export function SimulationsList() {
       </div>
     );
   }
+
+  if (isError) {
+    return (
+      <ErrorState
+        title="Couldn’t load simulations"
+        onRetry={() => refetch()}
+      />
+    );
+  }
+
   const sims = data ?? [];
 
   if (sims.length === 0) {
     return (
-      <Card className="border-dashed bg-surface-elevated/30">
-        <CardContent className="py-8 text-center text-sm text-muted-foreground">
-          No simulations yet. Start your first one above.
-        </CardContent>
-      </Card>
+      <EmptyState
+        icon={PlayCircle}
+        title="No simulations yet"
+        description="Start your first one above to test a product play against an audience."
+      />
     );
   }
 
   return (
     <div className="space-y-2">
       {sims.map((s) => (
-        <Link key={s.id} href={`/simulations/${s.id}`}>
+        <Link
+          key={s.id}
+          href={`/simulations/${s.id}`}
+          aria-label={`Open simulation ${s.name}`}
+          className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
           <Card className="hover:border-primary/40 hover:shadow-sm transition-all cursor-pointer">
             <CardContent className="p-4 flex items-center gap-4">
               <StatusIcon status={s.status} />

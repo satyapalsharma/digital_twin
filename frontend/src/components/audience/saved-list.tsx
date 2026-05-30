@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState, ErrorState } from "@/components/layout/states";
 import { api } from "@/lib/api";
 import { Bookmark } from "lucide-react";
 import { formatNumber } from "@/lib/utils";
@@ -17,7 +18,7 @@ interface AudienceRow {
 }
 
 export function SavedAudiences({ refreshKey }: { refreshKey: number }) {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["audiences", refreshKey],
     queryFn: () => api.get<AudienceRow[]>("/audiences"),
   });
@@ -31,13 +32,18 @@ export function SavedAudiences({ refreshKey }: { refreshKey: number }) {
       </div>
     );
   }
+  if (isError) {
+    return (
+      <ErrorState title="Couldn’t load saved audiences" onRetry={() => refetch()} />
+    );
+  }
   if (!data || data.length === 0) {
     return (
-      <Card className="border-dashed bg-surface-elevated/30">
-        <CardContent className="py-8 text-center text-sm text-muted-foreground">
-          No saved audiences yet — tune filters above and hit Save.
-        </CardContent>
-      </Card>
+      <EmptyState
+        icon={Bookmark}
+        title="No saved audiences yet"
+        description="Tune the filters above and hit Save to create your first cohort."
+      />
     );
   }
 
