@@ -10,9 +10,12 @@ import {
   LineChart,
   ClipboardList,
   Shield,
+  Home,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { useAuth } from "@/lib/auth";
 
 const nav = [
   { href: "/personas", label: "Personas", icon: Users },
@@ -25,6 +28,12 @@ const nav = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { user, signOut } = useAuth();
+  const initials = user?.name
+    ?.split(" ")
+    .map((p) => p[0])
+    .join("")
+    .slice(0, 2);
 
   return (
     <aside className="w-60 shrink-0 border-r border-border bg-surface flex flex-col">
@@ -67,12 +76,41 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="p-3 border-t border-border space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="text-xs text-muted-foreground">
-            <p>Hackathon build · v0.1</p>
-            <p className="text-foreground/60 mt-0.5">Insurance vertical</p>
+      <div className="p-3 border-t border-border space-y-1.5">
+        {user && (
+          <div className="flex items-center gap-2 px-1 pb-1">
+            <span className="size-7 shrink-0 grid place-items-center rounded-full bg-primary/15 text-primary text-[11px] font-semibold">
+              {initials}
+            </span>
+            <div className="min-w-0">
+              <p className="text-xs font-medium truncate">{user.name}</p>
+              <p className="text-[11px] text-muted-foreground truncate">
+                {user.email}
+              </p>
+            </div>
           </div>
+        )}
+
+        <Link
+          href="/"
+          className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-foreground/80 hover:bg-muted hover:text-foreground transition-colors"
+        >
+          <Home className="size-4" />
+          Back to home
+        </Link>
+        <button
+          type="button"
+          onClick={signOut}
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm text-foreground/80 hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+        >
+          <LogOut className="size-4" />
+          Sign out
+        </button>
+
+        <div className="flex items-center justify-between pt-1.5">
+          <span className="text-[11px] text-muted-foreground">
+            Hackathon build · v0.1
+          </span>
           <ThemeToggle />
         </div>
       </div>

@@ -14,6 +14,9 @@ import {
   IntentDistribution,
   RecommendBar,
 } from "@/components/insights/charts";
+import { ConfidenceGauge, AdvocacyGauge } from "@/components/insights/gauges";
+import { SegmentExplorer } from "@/components/insights/segment-charts";
+import { TelemetryPanel, type Telemetry } from "@/components/insights/telemetry-panel";
 import { ConcernsLists } from "@/components/insights/concerns-lists";
 import { SegmentBreakdown } from "@/components/insights/segment-breakdown";
 import { DivergingPersonas } from "@/components/insights/diverging-personas";
@@ -38,10 +41,21 @@ interface Insight {
     sentiment_pct: { positive: number; neutral: number; negative: number };
     would_recommend_pct: { yes: number; no: number; maybe: number };
     intent_distribution: number[];
-    by_age_bucket: { segment: string; count: number; avg_intent: number; positive_pct: number; negative_pct: number }[];
-    by_risk_tolerance: { segment: string; count: number; avg_intent: number; positive_pct: number; negative_pct: number }[];
+    by_age_bucket: SegmentRow[];
+    by_risk_tolerance: SegmentRow[];
+    by_income_band?: SegmentRow[];
+    by_region?: SegmentRow[];
+    telemetry?: Telemetry;
   };
   created_at: string;
+}
+
+interface SegmentRow {
+  segment: string;
+  count: number;
+  avg_intent: number;
+  positive_pct: number;
+  negative_pct: number;
 }
 
 interface Sim {
@@ -144,6 +158,15 @@ export default function InsightDetailPage({ params }: { params: Promise<{ id: st
 
 function Dashboard({ simId, insight }: { simId: number; insight: Insight }) {
   const m = insight.metrics;
+  const totalIntent = m.intent_distribution.reduce((a, b) => a + b, 0) || 1;
+  const topBox = Math.round(
+    (100 * ((m.intent_distribution[3] ?? 0) + (m.intent_distribution[4] ?? 0))) / totalIntent
+  );
+  const bottomBox = Math.round(
+    (100 * ((m.intent_distribution[0] ?? 0) + (m.intent_distribution[1] ?? 0))) / totalIntent
+  );
+  const nps = Math.round(m.would_recommend_pct.yes - m.would_recommend_pct.no);
+
   return (
     <div className="space-y-6">
       <VerdictCard
@@ -153,13 +176,23 @@ function Dashboard({ simId, insight }: { simId: number; insight: Insight }) {
         reasoning={insight.reasoning}
       />
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {/* Headline KPIs */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         <Stat label="Responses" value={formatNumber(m.successful)} sub={`of ${m.total} agents`} />
         <Stat label="Avg purchase intent" value={`${m.avg_purchase_intent}`} sub="out of 5" />
+        <Stat label="High intent (4–5)" value={`${topBox}%`} sub={`${bottomBox}% low (1–2)`} />
         <Stat label="Positive sentiment" value={`${m.sentiment_pct.positive}%`} sub={`${m.sentiment_pct.negative}% negative`} />
         <Stat label="Would recommend" value={`${m.would_recommend_pct.yes}%`} sub={`${m.would_recommend_pct.no}% wouldn't`} />
+        <Stat label="Advocacy (NPS)" value={nps > 0 ? `+${nps}` : `${nps}`} sub="promoters − detractors" />
       </div>
 
+      {/* Verdict + advocacy gauges */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <ConfidenceGauge confidence={insight.confidence} />
+        <AdvocacyGauge yes={m.would_recommend_pct.yes} no={m.would_recommend_pct.no} />
+      </div>
+
+      {/* Sentiment + intent distribution */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <SentimentDonut
           positive={m.sentiment_pct.positive}
@@ -175,17 +208,29 @@ function Dashboard({ simId, insight }: { simId: number; insight: Insight }) {
         maybe={m.would_recommend_pct.maybe}
       />
 
+      {/* Multi-dimension segment explorer */}
+      <SegmentExplorer
+        overallAvg={m.avg_purchase_intent}
+        byAge={m.by_age_bucket}
+        byRisk={m.by_risk_tolerance}
+        byIncome={m.by_income_band ?? []}
+        byRegion={m.by_region ?? []}
+      />
+
       <ConcernsLists concerns={insight.top_concerns} positives={insight.top_positives} />
 
       {insight.diverging_personas.length > 0 && (
         <DivergingPersonas simId={simId} personaIds={insight.diverging_personas} />
       )}
 
+      {/* Detailed numbers + LLM cohort notes */}
       <SegmentBreakdown
         fromLLM={insight.segment_breakdown}
         byRisk={m.by_risk_tolerance}
         byAge={m.by_age_bucket}
       />
+
+      <TelemetryPanel telemetry={m.telemetry} />
     </div>
   );
 }
