@@ -17,6 +17,21 @@ import logging
 from collections import Counter
 from typing import Any
 
+# Approximate OpenRouter pricing (USD per 1M tokens) for the default agent model
+# (google/gemini-2.0-flash-001). Used only to display an *estimated* run cost —
+# the figure is clearly labelled as an estimate in the UI.
+_PRICE_PER_M_INPUT = 0.10
+_PRICE_PER_M_OUTPUT = 0.40
+
+
+def _percentile(values: list[int], pct: float) -> int:
+    """Nearest-rank percentile (pct in 0..100). Returns 0 for empty input."""
+    if not values:
+        return 0
+    ordered = sorted(values)
+    k = max(0, min(len(ordered) - 1, round(pct / 100 * (len(ordered) - 1))))
+    return int(ordered[k])
+
 from pydantic import BaseModel, Field, ValidationError
 from sqlalchemy.orm import Session
 
@@ -42,6 +57,29 @@ class SynthesizerOutput(BaseModel):
     segment_breakdown: list[dict[str, Any]]  # [{segment, count, avg_intent, sentiment_pct}]
 
 
+def _compute_telemetry(responses: list[AgentResponse]) -> dict[str, Any]:
+    """Cost / latency / token telemetry across all agent calls in a run."""
+    n = len(responses)
+    tokens_in = sum(r.tokens_in or 0 for r in responses)
+    tokens_out = sum(r.tokens_out or 0 for r in responses)
+    latencies = [r.latency_ms for r in responses if r.latency_ms]
+    est_cost = (
+        tokens_in / 1_000_000 * _PRICE_PER_M_INPUT
+        + tokens_out / 1_000_000 * _PRICE_PER_M_OUTPUT
+    )
+    successful = sum(1 for r in responses if not r.failed)
+    return {
+        "tokens_in": tokens_in,
+        "tokens_out": tokens_out,
+        "total_tokens": tokens_in + tokens_out,
+        "avg_tokens_per_response": round((tokens_in + tokens_out) / n, 1) if n else 0,
+        "avg_latency_ms": int(sum(latencies) / len(latencies)) if latencies else 0,
+        "p95_latency_ms": _percentile(latencies, 95),
+        "est_cost_usd": round(est_cost, 4),
+        "completion_rate_pct": round(100 * successful / n, 1) if n else 0,
+    }
+
+
 def _compute_metrics(
     responses: list[AgentResponse], personas: dict[int, Persona]
 ) -> dict[str, Any]:
@@ -57,6 +95,9 @@ def _compute_metrics(
             "intent_distribution": [0] * 5,
             "by_age_bucket": [],
             "by_risk_tolerance": [],
+            "by_income_band": [],
+            "by_region": [],
+            "telemetry": _compute_telemetry(responses),
         }
 
     avg_intent = sum(r.purchase_intent for r in successful) / len(successful)
@@ -78,6 +119,8 @@ def _compute_metrics(
 
     by_risk: dict[str, list[AgentResponse]] = {}
     by_age: dict[str, list[AgentResponse]] = {}
+    by_income: dict[str, list[AgentResponse]] = {}
+    by_region: dict[str, list[AgentResponse]] = {}
     for r in successful:
         p = personas.get(r.persona_id)
         if not p:
@@ -85,6 +128,15 @@ def _compute_metrics(
         by_risk.setdefault(p.risk_tolerance, []).append(r)
         bucket = "<30" if p.age < 30 else "30-44" if p.age < 45 else "45-59" if p.age < 60 else "60+"
         by_age.setdefault(bucket, []).append(r)
+        income_band = (
+            "<$50k" if p.income < 50_000
+            else "$50–100k" if p.income < 100_000
+            else "$100–150k" if p.income < 150_000
+            else "$150k+"
+        )
+        by_income.setdefault(income_band, []).append(r)
+        if p.region:
+            by_region.setdefault(p.region, []).append(r)
 
     def seg_row(label: str, rs: list[AgentResponse]) -> dict[str, Any]:
         cnt = len(rs)
@@ -98,6 +150,23 @@ def _compute_metrics(
             "negative_pct": round(100 * sent.get("negative", 0) / cnt, 1),
         }
 
+    # Keep income bands in natural order; surface only the busiest regions.
+    income_order = ["<$50k", "$50–100k", "$100–150k", "$150k+"]
+    income_rows = [seg_row(k, by_income[k]) for k in income_order if k in by_income]
+    region_rows = sorted(
+        (seg_row(k, v) for k, v in by_region.items()),
+        key=lambda r: r["count"],
+        reverse=True,
+    )[:8]
+
+    # Order risk tolerance low → high for a readable axis.
+    risk_order = ["low", "medium", "high"]
+    risk_rows = [seg_row(k, by_risk[k]) for k in risk_order if k in by_risk]
+    risk_rows += [seg_row(k, v) for k, v in by_risk.items() if k not in risk_order]
+
+    age_order = ["<30", "30-44", "45-59", "60+"]
+    age_rows = [seg_row(k, by_age[k]) for k in age_order if k in by_age]
+
     return {
         "total": len(responses),
         "successful": len(successful),
@@ -106,8 +175,11 @@ def _compute_metrics(
         "sentiment_pct": sentiment_pct,
         "would_recommend_pct": rec_pct,
         "intent_distribution": intent_dist,
-        "by_age_bucket": [seg_row(k, v) for k, v in by_age.items()],
-        "by_risk_tolerance": [seg_row(k, v) for k, v in by_risk.items()],
+        "by_age_bucket": age_rows,
+        "by_risk_tolerance": risk_rows,
+        "by_income_band": income_rows,
+        "by_region": region_rows,
+        "telemetry": _compute_telemetry(responses),
     }
 
 
