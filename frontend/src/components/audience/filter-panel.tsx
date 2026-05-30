@@ -23,13 +23,19 @@ import { formatCurrency, formatNumber } from "@/lib/utils";
 interface Props {
   value: FilterState;
   onChange: (next: FilterState) => void;
+  /** Region/occupation options derived from the live pool (/personas/facets).
+   *  Falls back to the static lists when facets aren't loaded yet. */
+  regionOptions?: readonly string[];
+  occupationOptions?: readonly string[];
 }
 
 function toggle<T extends string>(arr: T[], v: T): T[] {
   return arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
 }
 
-export function FilterPanel({ value, onChange }: Props) {
+export function FilterPanel({ value, onChange, regionOptions, occupationOptions }: Props) {
+  const regions = regionOptions?.length ? regionOptions : REGIONS;
+  const occupations = occupationOptions?.length ? occupationOptions : OCCUPATIONS;
   const set = useMemo(() => {
     return <K extends keyof FilterState>(key: K, v: FilterState[K]) =>
       onChange({ ...value, [key]: v });
@@ -123,7 +129,7 @@ export function FilterPanel({ value, onChange }: Props) {
         {/* Regions */}
         <ChipGroup
           label="Regions"
-          options={REGIONS}
+          options={regions}
           selected={value.regions}
           onToggle={(v) => set("regions", toggle(value.regions, v))}
           size="sm"
@@ -132,7 +138,7 @@ export function FilterPanel({ value, onChange }: Props) {
         {/* Occupations */}
         <ChipGroup
           label="Occupations"
-          options={OCCUPATIONS}
+          options={occupations}
           selected={value.occupations}
           onToggle={(v) => set("occupations", toggle(value.occupations, v))}
           size="sm"

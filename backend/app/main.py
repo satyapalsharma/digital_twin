@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
 from app.db import init_db
-from app.routers import audiences, personas, products, simulations, surveys
+from app.routers import admin, audiences, personas, products, simulations, surveys
 from app.services.phoenix import init_tracing
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -41,6 +41,7 @@ def create_app() -> FastAPI:
     app.include_router(products.router)
     app.include_router(surveys.router)
     app.include_router(simulations.router)
+    app.include_router(admin.router)
 
     @app.get("/health")
     def health():

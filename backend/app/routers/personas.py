@@ -1,10 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, func, or_
 from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.models.persona import Persona
-from app.schemas.persona import PersonaCreate, PersonaFilter, PersonaOut
+from app.schemas.persona import (
+    PersonaBulkCreate,
+    PersonaBulkResult,
+    PersonaCreate,
+    PersonaFilter,
+    PersonaOut,
+    PersonaUpdate,
+)
 
 router = APIRouter(prefix="/personas", tags=["personas"])
 
@@ -47,6 +54,39 @@ def count_personas(db: Session = Depends(get_db)):
     return {"total": total}
 
 
+@router.get("/facets")
+def persona_facets(db: Session = Depends(get_db)):
+    """Distinct values + counts for each filterable attribute, derived from the
+    live persona pool. Drives the audience-builder chips so they match the data
+    instead of a hardcoded list. Declared before /{persona_id} so the literal
+    path isn't parsed as an id."""
+
+    def top(column, limit: int):
+        rows = (
+            db.query(column, func.count())
+            .group_by(column)
+            .order_by(func.count().desc())
+            .limit(limit)
+            .all()
+        )
+        return [{"value": v, "count": c} for v, c in rows if v not in (None, "")]
+
+    age_min, age_max = db.query(func.min(Persona.age), func.max(Persona.age)).one()
+    inc_min, inc_max = db.query(func.min(Persona.income), func.max(Persona.income)).one()
+
+    return {
+        "total": db.query(Persona).count(),
+        "genders": top(Persona.gender, 10),
+        "marital_statuses": top(Persona.marital_status, 10),
+        "risk_tolerances": top(Persona.risk_tolerance, 10),
+        "claims_histories": top(Persona.claims_history, 10),
+        "regions": top(Persona.region, 40),
+        "occupations": top(Persona.occupation, 40),
+        "age": {"min": age_min, "max": age_max},
+        "income": {"min": inc_min, "max": inc_max},
+    }
+
+
 @router.get("", response_model=list[PersonaOut])
 def list_personas(
     limit: int = Query(default=50, ge=1, le=500),
@@ -72,6 +112,39 @@ def create_persona(payload: PersonaCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(p)
     return p
+
+
+@router.patch("/{persona_id}", response_model=PersonaOut)
+def update_persona(persona_id: int, payload: PersonaUpdate, db: Session = Depends(get_db)):
+    p = db.get(Persona, persona_id)
+    if not p:
+        raise HTTPException(404, "persona not found")
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(p, field, value)
+    db.commit()
+    db.refresh(p)
+    return p
+
+
+@router.delete("/{persona_id}", status_code=204)
+def delete_persona(persona_id: int, db: Session = Depends(get_db)):
+    p = db.get(Persona, persona_id)
+    if not p:
+        raise HTTPException(404, "persona not found")
+    db.delete(p)
+    db.commit()
+
+
+@router.post("/bulk", response_model=PersonaBulkResult, status_code=201)
+def create_personas_bulk(payload: PersonaBulkCreate, db: Session = Depends(get_db)):
+    """Insert many personas in one transaction — used by the import wizard
+    (CSV upload, paste, or sample dataset)."""
+    rows = [Persona(**p.model_dump()) for p in payload.personas]
+    db.add_all(rows)
+    db.commit()
+    for r in rows:
+        db.refresh(r)
+    return PersonaBulkResult(inserted=len(rows), ids=[r.id for r in rows])
 
 
 @router.post("/filter/preview")

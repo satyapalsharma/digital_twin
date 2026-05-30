@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, LineChart } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ErrorState } from "@/components/layout/states";
 import { api } from "@/lib/api";
 
 interface SimRow {
@@ -46,7 +47,12 @@ export default function InsightsPage() {
         </p>
       </div>
 
-      {completed.length === 0 ? (
+      {sims.isError ? (
+        <ErrorState
+          title="Couldn’t load simulations"
+          onRetry={() => sims.refetch()}
+        />
+      ) : completed.length === 0 ? (
         <Card className="border-dashed bg-surface-elevated/30">
           <CardContent className="py-12 text-center space-y-2">
             <LineChart className="size-8 mx-auto text-muted-foreground" />
@@ -78,7 +84,11 @@ function InsightRow({ sim }: { sim: SimRow }) {
   });
 
   return (
-    <Link href={`/insights/${sim.id}`}>
+    <Link
+      href={`/insights/${sim.id}`}
+      aria-label={`Open insights for ${sim.name}`}
+      className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+    >
       <Card className="hover:border-primary/40 hover:shadow-sm transition-all cursor-pointer">
         <CardContent className="p-4 flex items-center gap-4">
           <div className="flex-1 min-w-0">

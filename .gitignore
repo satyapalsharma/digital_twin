@@ -60,3 +60,4 @@ yarn-error.log*
 # Phoenix / observability local data
 .phoenix/
 phoenix_db/
+.env*

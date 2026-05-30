@@ -54,6 +54,7 @@ class InsightOut(BaseModel):
     reasoning: str
     top_concerns: list[str]
     top_positives: list[str]
+    recommendations: list[str] = []
     segment_breakdown: list[dict]
     diverging_personas: list[int]
     metrics: dict

@@ -72,6 +72,8 @@ class Insight(Base):
     reasoning: Mapped[str] = mapped_column(Text, default="")
     top_concerns: Mapped[list[str]] = mapped_column(JSON, default=list)
     top_positives: Mapped[list[str]] = mapped_column(JSON, default=list)
+    # LLM-generated, actionable "what to improve" suggestions tied to the verdict.
+    recommendations: Mapped[list[str]] = mapped_column(JSON, default=list)
     segment_breakdown: Mapped[list[dict]] = mapped_column(JSON, default=list)
     diverging_personas: Mapped[list[int]] = mapped_column(JSON, default=list)
     metrics: Mapped[dict] = mapped_column(JSON, default=dict)

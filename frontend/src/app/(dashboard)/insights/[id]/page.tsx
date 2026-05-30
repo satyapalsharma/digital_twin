@@ -20,6 +20,7 @@ import { TelemetryPanel, type Telemetry } from "@/components/insights/telemetry-
 import { ConcernsLists } from "@/components/insights/concerns-lists";
 import { SegmentBreakdown } from "@/components/insights/segment-breakdown";
 import { DivergingPersonas } from "@/components/insights/diverging-personas";
+import { RecommendationsPanel } from "@/components/insights/recommendations-panel";
 import { formatNumber } from "@/lib/utils";
 
 interface Insight {
@@ -31,6 +32,7 @@ interface Insight {
   reasoning: string;
   top_concerns: string[];
   top_positives: string[];
+  recommendations: string[];
   segment_breakdown: { segment: string; verdict_lean?: string; note?: string }[];
   diverging_personas: number[];
   metrics: {
@@ -231,6 +233,9 @@ function Dashboard({ simId, insight }: { simId: number; insight: Insight }) {
       />
 
       <TelemetryPanel telemetry={m.telemetry} />
+
+      {/* LLM recommendations — what to improve, anchored at the bottom */}
+      <RecommendationsPanel recommendations={insight.recommendations} />
     </div>
   );
 }

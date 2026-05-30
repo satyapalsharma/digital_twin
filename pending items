@@ -1,0 +1,223 @@
+PENDING ITEMS — Simulation Sentinels (living backlog)
+Last updated: 2026-05-30
+
+This file is the running backlog. Original asks are at the top; everything
+identified during implementation is tracked below with status markers:
+  [x] done   [~] in progress   [ ] not started
+
+=============================================================================
+ORIGINAL REQUESTS
+=============================================================================
+
+1. PERSONAS — let users define their own personas
+   - Option to add dummy personas manually
+   - Import data and use it to define custom personas in bulk
+   - Create placeholder with dummy + mock screens
+   Status: [x] DONE (see "Item 1 — delivered" below)
+
+2. PRODUCT PAGE & DETAILS — UI/UX and content enhancement
+   - Act as senior product manager; review and enhance
+   Status: [x] DONE (see "Item 2 — delivered" below)
+
+3. CXO DEMO READINESS — after items 1 & 2
+   - Act as UI/UX architect; list gaps + enhancements to make it demo ready
+   Status: [x] DONE — deliverable: docs/CXO_DEMO_READINESS.md
+           (5 P0 demo blockers + P1/P2 backlog + 3-min runbook)
+
+=============================================================================
+ITEM 1 — DELIVERED (personas)
+=============================================================================
+Backend
+  [x] POST /personas/bulk — transactional bulk insert (schemas: PersonaBulkCreate / PersonaBulkResult)
+  [x] source tagging on personas: llm_generated | user_created | imported
+
+Frontend
+  [x] "Add persona" dialog — single hand-crafted persona, fully functional (POST /personas)
+  [x] "Import personas" wizard — 3-step (Source -> Preview & map -> Import)
+        - Use sample dataset (6 bundled personas, zero setup)
+        - Upload CSV (.csv)
+        - Paste rows
+        - CSV template download + tolerant CSV parser with row validation
+        - mock column-mapping strip + preview table; functional bulk insert
+  [x] Personas page header wired with both actions
+  [x] Source badge column in personas table + source badge in detail dialog
+
+Files added: frontend/src/lib/persona-import.ts,
+  frontend/src/components/personas/persona-form.tsx,
+  frontend/src/components/personas/persona-import-dialog.tsx
+Files changed: backend personas router + schema, personas page/table/detail dialog
+
+=============================================================================
+ITEM 2 — DELIVERED (products / senior PM review)
+=============================================================================
+  [x] Rich product detail dialog: "the play", hypothesis, target segment,
+      readable config "levers", KPIs to watch, headline key-lever callout,
+      scenario-type label (replaced the raw JSON dump)
+  [x] Product cards: headline key-lever chip (e.g. "+12% premium", "$8/mo")
+      + scenario-type label + description fallback
+  [x] Create-product form: optional framing fields (hypothesis, target
+      segment, key lever + value) saved into config
+  [x] product metadata helper lib: scenario label/summary/hypothesis/KPIs +
+      config humanizing / value formatting / headline-chip derivation
+
+Files added: frontend/src/lib/product-meta.ts
+Files changed: products page (cards), product-detail-dialog, product-form
+
+Verification: frontend tsc --noEmit OK; eslint clean on touched files;
+  GET /personas and /products compile + 200 in dev; POST /personas/bulk smoke-tested.
+
+=============================================================================
+IDENTIFIED ITEMS / BACKLOG (found while building — candidates for item 3)
+=============================================================================
+(NOTE: this tab works this backlog TOP -> BOTTOM; the other tab works
+ BOTTOM -> TOP. Don't reorder; just flip status markers in place.)
+
+Personas
+  [x] Edit / delete a single persona — PATCH+DELETE /personas/{id}; edit form
+      reused in edit mode; Edit/Delete in detail dialog (done R2)
+  [x] De-dup on import (name+region collision detection) — preview flags dups,
+      "skip N already in pool" toggle, default-on (done R2)
+  [x] Real file column-mapping (currently auto-mapped/mock); support header aliases
+      — editable field->column dropdowns, auto-detect via header alias table
+      (CRM/warehouse names), live re-derive on remap, required-field warning (done R3)
+  [x] Async/large imports with progress for thousands of rows — client chunks
+      the bulk insert (250/call, under the API's 2000 cap) and drives a live
+      Progress bar (done N / total); partial-failure message reports inserted (done R4)
+  [x] Persona facets endpoint to drive filter chips from real data — GET
+      /personas/facets (distinct values + counts; age/income ranges); audience
+      FilterPanel now sources region/occupation chips from the live pool with
+      static fallback (done R5)
+  [x] Empty-state CTA should point to Add/Import — Add + Import buttons in the
+      empty state; seed script demoted to secondary (done R2)
+
+Products
+  [x] Edit a custom product — PATCH /products/{id} (templates 400-blocked);
+      product form reused in edit mode (done R2)
+  [x] Clone a template into a custom product as a starting point — "Clone &
+      customize" on template detail copies into an editable custom product (done R2)
+  [x] Validation/typing of config per scenario_type — SCENARIO_CONFIG_SCHEMA
+      (per-type fields w/ type percent|currency|number|text|boolean + min/max);
+      product form renders typed inputs for the chosen scenario and validates
+      ranges on submit; edit preserves unmanaged config keys (done R6)
+  [x] Link product directly into a pre-filled simulation run — product cards/
+      detail deep-link to /simulations?product=ID; the new-simulation form
+      consumes the param, pre-selects the product, and shows a "Pre-filled from
+      Products — pick an audience to run" cue (done R7)
+
+Platform / demo polish (for item 3 — CXO readiness)
+  [~] OPENROUTER_API_KEY is a placeholder — LLM features (persona gen, sims,
+      insights) will fail until a real key is set; backend started without --reload
+      -> Added a visible "LLM connected ✓ / not configured" health chip
+         (GET /admin/llm-health + sidebar chip). Setting a real key is still ops. (B1)
+  [x] Global empty/loading/error states consistency pass — reusable EmptyState /
+      ErrorState primitives (components/layout/states.tsx); wired query-error +
+      consistent empty states into simulations-list, insights page, /overview,
+      and saved audiences. (TOP tab can adopt the same primitives on
+      personas/products.) (B5)
+      -> TOP tab adopted the shared layout/states primitives on Products
+         (skeleton grid + error retry + zero-state), Personas (error retry),
+         and Audiences (cohort-preview error retry); removed an accidental
+         duplicate ui/states.tsx. (R8)
+  [x] Dashboard/home KPI summary for the exec narrative — new /overview route:
+      headline KPI cards (synthetic customers / audiences / product plays /
+      decisions simulated), Launch·Optimize·Halt outcome tally + avg confidence,
+      latest-decision highlight, and a "Run a decision" golden-path CTA. Added
+      Overview to the sidebar nav. (B4)
+  [x] Accessibility pass (focus states, aria labels, color contrast) — focus-
+      visible rings + aria-labels on clickable simulation/insight cards;
+      aria-labels on icon-only survey delete buttons; mobile menu button labeled
+      + aria-expanded. (B3) (note: persona/product surfaces left to TOP tab)
+      -> TOP tab covered persona/product surfaces: persona table rows and product
+         cards are now keyboard-operable (role=button, tabIndex, Enter/Space) with
+         focus-visible rings + descriptive aria-labels; icon-only product delete
+         button labeled. (R9)
+  [x] Mobile/responsive review of dashboard tables and dialogs — responsive
+      app-shell: collapsible sidebar becomes a slide-in drawer under md with a
+      mobile top bar + hamburger; dialogs get a mobile side-gutter; confirmed
+      dashboard tables already scroll-x. (B2)
+  [x] Seed/demo "reset to clean state" control for repeatable demos
+      (see "ITEM 3 (bottom) — DELIVERED" below) (B1)
+
+=============================================================================
+ITEM 3 (bottom) — DELIVERED  (2nd tab, working BOTTOM -> TOP)
+=============================================================================
+Round B1: Demo reset / known-good state (P0-2) + LLM health chip (part of P0-1)
+
+Backend
+  [x] app/services/demo_state.py — offline, deterministic "reset to baseline":
+        clears all simulations/responses/insights; removes custom (non-template)
+        products; removes imported/hand-added personas (keeps the llm_generated
+        pool); drops non-canonical audiences/surveys; re-seeds baseline
+        templates + demo surveys + demo audiences (resolved against live pool).
+        No LLM/network calls — safe to run on stage. clear_personas flag for a
+        deeper wipe.
+  [x] app/routers/admin.py — GET /admin/state, POST /admin/reset
+        (?clear_personas), GET /admin/llm-health (no-network key check).
+  [x] registered admin.router in app/main.py
+
+Frontend
+  [x] components/layout/demo-controls.tsx — LLM health chip (green/amber,
+        60s refetch) + "Reset demo" confirmation dialog showing live counts
+        and exactly what the reset does; invalidates the query cache on success.
+  [x] wired DemoControls into the sidebar footer.
+
+Verification: backend imports OK + 3 admin routes register; full reset
+  round-trip tested on a throwaway DB copy (junk added -> reset -> baseline
+  restored, persona pool preserved); live GET /admin/state + /admin/llm-health
+  return 200; frontend tsc --noEmit clean; eslint clean on touched files.
+
+Round B2: Mobile/responsive review of dashboard tables and dialogs (P2)
+Frontend
+  [x] components/layout/app-shell.tsx — responsive shell: persistent sidebar on
+        md+, slide-in drawer + scrim under md, mobile top bar with hamburger;
+        drawer closes on route change (render-time sync) and Escape.
+  [x] components/layout/sidebar.tsx — accepts onNavigate/className; all links +
+        sign-out close the drawer on tap.
+  [x] components/ui/dialog.tsx — DialogContent gets a mobile side-gutter
+        (w-[calc(100%-2rem)] sm:w-full) so dialogs never touch screen edges.
+  [x] Audited dashboard tables — personas/responses/comparison already wrap in
+        overflow-x-auto; segment-breakdown is 4 compact cols (fits). No change.
+Verification: frontend tsc --noEmit clean; eslint clean on touched files.
+
+Round B3: Accessibility pass (P2)
+Frontend
+  [x] simulations-list.tsx + insights/page.tsx — clickable cards wrapped in
+        <Link> now get focus-visible rings + descriptive aria-labels (keyboard
+        users get a visible focus indicator + a meaningful link name).
+  [x] surveys/question-editor.tsx — icon-only "delete question" / "remove
+        option" buttons get aria-labels.
+  [x] app-shell mobile menu button — aria-label + aria-expanded.
+  [scope] persona/product surfaces (rows, cards, import sources) are owned by
+        the TOP tab this round; left for them to keep diffs conflict-free.
+Verification: frontend tsc --noEmit clean; eslint clean; full `npm run build`
+  succeeds (13 routes).
+
+Round B4: Dashboard/home KPI summary for the exec narrative (P1 boardroom view)
+Frontend
+  [x] app/(dashboard)/overview/page.tsx — exec overview at /overview. Reuses
+        cheap endpoints (GET /admin/state for headline counts, GET /simulations,
+        per-run /insight via useQueries). Sections: 4 KPI cards (clickable, with
+        focus rings), Launch·Optimize·Halt outcome tally + avg confidence,
+        latest-decision highlight card, and a "Run a decision" CTA.
+  [x] sidebar.tsx — added "Overview" (LayoutDashboard) as the first nav item.
+        (route group note: can't live at "/" — that's the marketing page — so
+         it's /overview.)
+Verification: tsc --noEmit clean; eslint clean; npm run build succeeds (now 14
+  routes incl. /overview).
+
+Round B5: Global empty/loading/error states consistency pass (P0-3)
+Frontend
+  [x] components/layout/states.tsx — reusable <EmptyState> (icon/title/desc/
+        action) and <ErrorState> (title/desc/onRetry) panels.
+  [x] simulations-list.tsx — query-error -> ErrorState w/ retry; empty -> EmptyState.
+  [x] insights/page.tsx — query-error -> ErrorState w/ retry.
+  [x] overview/page.tsx — error gates on metrics + outcomes.
+  [x] audience/saved-list.tsx — error -> ErrorState w/ retry; empty -> EmptyState.
+Verification: tsc --noEmit clean; eslint clean; npm run build succeeds.
+
+=============================================================================
+BOTTOM SECTION COMPLETE — all "Platform / demo polish" items are now [x] or [~]
+=============================================================================
+The only remaining open backlog items are in the Personas/Products sections,
+owned by the TOP tab (Persona facets endpoint; per-scenario config validation;
+link product into a pre-filled sim run). Bottom tab is idle / available to help.
