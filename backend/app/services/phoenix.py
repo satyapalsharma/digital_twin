@@ -46,6 +46,7 @@ def init_tracing() -> None:
         register(
             project_name=settings.phoenix_project_name,
             auto_instrument=True,
+            batch=True,
         )
         _initialized = True
         log.info(
